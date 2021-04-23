@@ -14,12 +14,12 @@ Devices:
 
 
 For use with win32 emulators like
-- PCSX2 (special 0.9.8 usb-emu only)
-- PCSX2 (SVN)
+- PCSX2 (1.6 stable is latest supported version)
 
 
 
 News:
+- 04-23-21  Add ability to have an alternate device (like a pedal) for button inputs
 - 10-21-11  Other misc stuff
 - 10-21-11  Upgrade RES2 to working (latest PCSX2 SVN)
 - 10-21-11  Create Resident Evil Survivor 2 Guncon2 profile
@@ -46,11 +46,12 @@ News:
 
 
 INSTRUCTIONS:
-0- Install official PCSX2 0.9.8 first
+0- Install official PCSX2 1.6.0 first
 1- Copy dll to your emu's 'plugins' folder
 2- Set plugin to nuvee
 3- Set nuvee device and configure
 4- Hit acquire. choose game profile
+5- (Optional) Hit acquire alternate to enable a secondary device for button presses (eg. Time Crisis Foot Pedal)
 5- Play game
 
 
