@@ -555,7 +555,7 @@ void SaveConfig_Guncon( char *file_name )
 }
 
 
-DWORD WINAPI get_guncon_hid_device()
+DWORD WINAPI get_guncon_hid_device(bool isAlternate = false)
 {
 	int lcv, reset_data;
 	int calibrate_check;
@@ -564,26 +564,32 @@ DWORD WINAPI get_guncon_hid_device()
 	if( pad_active == 1 ) {
 		LoadConfig_Guncon( GetIniPath( "nuvee_ps2_usb_guncon1.ini" ) );
 
-
-		MessageBox( NULL,
+		if ( isAlternate )
+			MessageBox( NULL,
+			"Please connect the alternate device you wish to use for button inputs (i.e. a Pedal)\r\r1- Close this box\r2- Press a button on the desired device\r3- Wait for immediate confirmation\r4- If no detection, click mouse or fire trigger at game window and try again\r5- Plugin will auto-remember HID name for next session",
+			"Guncon 1 - Acquire", MB_OK );
+		else
+			MessageBox( NULL,
 			"Please connect the mouse or lightgun you wish to use\r\r1- Close this box\r2- Press a button on the desired device\r3- Wait for immediate confirmation\r4- If no detection, click mouse or fire trigger at game window and try again\r5- Plugin will auto-remember HID name for next session",
 			"Guncon 1 - Acquire", MB_OK );
 	}
 	else if( pad_active == 2 ) {
 		LoadConfig_Guncon( GetIniPath( "nuvee_ps2_usb_guncon2.ini" ) );
 
-
-		MessageBox( NULL,
+		if ( isAlternate )
+			MessageBox( NULL,
+			"Please connect the alternate device you wish to use for button inputs (i.e. a Pedal)\r\r1- Close this box\r2- Press a button on the desired device\r3- Wait for immediate confirmation\r4- If no detection, click mouse or fire trigger at game window and try again\r5- Plugin will auto-remember HID name for next session",
+			"Guncon 2 - Acquire", MB_OK );
+		else
+			MessageBox( NULL,
 			"Please connect the mouse or lightgun you wish to use\r\r1- Close this box\r2- Press a button on the desired device\r3- Wait for immediate confirmation\r4- If no detection, click mouse or fire trigger at game window and try again\r5- Plugin will auto-remember HID name for next session",
 			"Guncon 2 - Acquire", MB_OK );
 	}
 
-
-	device_hid[ THIS_PAD ] = 0;
-	device_alt_hid[ THIS_PAD ] = -1;
-		
-
-
+	if ( isAlternate )
+		device_alt_hid[ THIS_PAD ] = -1;
+	else
+		device_hid[ THIS_PAD ] = 0;
 
 	// Joystick usage
 	if( di_joystick_count > 0 &&
@@ -637,9 +643,14 @@ DWORD WINAPI get_guncon_hid_device()
 				{
 					done = 1;
 
-					device_hid[ THIS_PAD ] = lcv + 20;
-
-					strcpy( guncon_guid_name[ THIS_PAD ], di_joystick_guid[ lcv ] );
+					if ( isAlternate ) {
+						device_alt_hid[ THIS_PAD ] = lcv + 20;
+						strcpy( guncon_alt_guid_name[ THIS_PAD ], di_joystick_guid[ lcv ] );
+					}
+					else {
+						device_hid[ THIS_PAD ] = lcv + 20;
+						strcpy( guncon_guid_name[ THIS_PAD ], di_joystick_guid[ lcv ] );
+					}
 					break;
 				}
 			}
@@ -672,14 +683,20 @@ DWORD WINAPI get_guncon_hid_device()
 				{
 					done = 1;
 
-
-					device_hid[ THIS_PAD ] = lcv;
-
-
-					if( lcv > 0 )
-						strcpy( guncon_guid_name[ THIS_PAD ], get_raw_mouse_name(lcv) );
-					else
-						strcpy( guncon_guid_name[ THIS_PAD ], "RawInput SysMouse" );
+					if ( isAlternate ) {
+						device_alt_hid[ THIS_PAD ] = lcv;
+						if( lcv > 0 )
+							strcpy( guncon_alt_guid_name[ THIS_PAD ], get_raw_mouse_name(lcv) );
+						else
+							strcpy( guncon_alt_guid_name[ THIS_PAD ], "RawInput SysMouse" );
+					}
+					else {
+						device_hid[ THIS_PAD ] = lcv;
+						if( lcv > 0 )
+							strcpy( guncon_guid_name[ THIS_PAD ], get_raw_mouse_name(lcv) );
+						else
+							strcpy( guncon_guid_name[ THIS_PAD ], "RawInput SysMouse" );
+					}
 					break;
 				}
 			}
@@ -727,13 +744,20 @@ DWORD WINAPI get_guncon_hid_device()
 				{
 					done = 1;
 
-					device_hid[ THIS_PAD ] = lcv;
-
-
-					if( lcv > 0 )
-						strcpy( guncon_guid_name[ THIS_PAD ], di_mouse_guid[ lcv ] );
-					else
-						strcpy( guncon_guid_name[ THIS_PAD ], "DInput SysMouse" );
+					if ( isAlternate ) {
+						device_alt_hid[ THIS_PAD ] = lcv;
+						if( lcv > 0 )
+							strcpy( guncon_alt_guid_name[ THIS_PAD ], di_mouse_guid[ lcv ] );
+						else
+							strcpy( guncon_alt_guid_name[ THIS_PAD ], "DInput SysMouse" );
+					}
+					else {
+						device_hid[ THIS_PAD ] = lcv;
+						if( lcv > 0 )
+							strcpy( guncon_guid_name[ THIS_PAD ], di_mouse_guid[ lcv ] );
+						else
+							strcpy( guncon_guid_name[ THIS_PAD ], "DInput SysMouse" );
+					}
 					break;
 				}
 
@@ -743,73 +767,74 @@ DWORD WINAPI get_guncon_hid_device()
 		} // end wait device
 	}
 
+	// only calibrate the primary HID device
+	if ( !isAlternate ) {		
+		calibrate_check = 0;
 
-
-	calibrate_check = 0;
-
-	if(	device_absolute[ device_hid[ THIS_PAD ] ] )
-	{
-		if( pad_active == 1 ) {
-			if( IDOK == MessageBox( NULL, "Ready to calibrate the device\r\r1- Close box\r2- Wave gun around past all edges of screen - left/right/top/bottom\r3- Press gun button when finished\r\r\rTO SKIP THIS TEST:\r- Click cancel",
-							"Guncon 1 - Calibration", MB_OKCANCEL ) ) {
-				calibrate_check = 1;
+		if(	device_absolute[ device_hid[ THIS_PAD ] ] )
+		{
+			if( pad_active == 1 ) {
+				if( IDOK == MessageBox( NULL, "Ready to calibrate the device\r\r1- Close box\r2- Wave gun around past all edges of screen - left/right/top/bottom\r3- Press gun button when finished\r\r\rTO SKIP THIS TEST:\r- Click cancel",
+								"Guncon 1 - Calibration", MB_OKCANCEL ) ) {
+					calibrate_check = 1;
+				}
+			}
+			else if( pad_active == 2 ) {
+				if( IDOK == MessageBox( NULL, "Ready to calibrate the device\r\r1- Close box\r2- Wave gun around past all edges of screen - left/right/top/bottom\r3- Press gun button when finished\r\r\rTO SKIP THIS TEST:\r- Click cancel",
+								"Guncon 2 - Calibration", MB_OKCANCEL ) ) {
+					calibrate_check = 1;
+				}
 			}
 		}
-		else if( pad_active == 2 ) {
-			if( IDOK == MessageBox( NULL, "Ready to calibrate the device\r\r1- Close box\r2- Wave gun around past all edges of screen - left/right/top/bottom\r3- Press gun button when finished\r\r\rTO SKIP THIS TEST:\r- Click cancel",
-							"Guncon 2 - Calibration", MB_OKCANCEL ) ) {
-				calibrate_check = 1;
+
+
+		if( calibrate_check )
+		{
+			reset_raw_mouse_data( device_hid[ THIS_PAD ] );
+
+
+			reset_data = 0;
+			while(1) {
+				int x,y;
+
+				// check for active device
+				if( is_raw_mouse_button_pressed(device_hid[ THIS_PAD ],0) ||
+						is_raw_mouse_button_pressed(device_hid[ THIS_PAD ],1) ||
+						is_raw_mouse_button_pressed(device_hid[ THIS_PAD ],2) ) {
+					break;
+				}
+
+
+				// read data (16-bit unsigned absolute values)
+				x = get_raw_mouse_x_delta( device_hid[ THIS_PAD ] );
+				y = get_raw_mouse_y_delta( device_hid[ THIS_PAD ] );
+
+
+				// let system rest
+				Sleep(1);
+
+
+				// ignore offscreen data
+				if( x == 0 || y == 0 || x == 65535 || y == 65535 )
+					continue;
+
+
+				if( reset_data == 0 ) {
+					reset_data = 1;
+
+					guncon_lightgun_left[ THIS_PAD ] = 65534;
+					guncon_lightgun_top[ THIS_PAD ] = 65534;
+					guncon_lightgun_right[ THIS_PAD ] = 1;
+					guncon_lightgun_bottom[ THIS_PAD ] = 1;
+				}
+
+
+				// look for screen edges
+				if( guncon_lightgun_left[ THIS_PAD ] > x ) guncon_lightgun_left[ THIS_PAD ] = x;
+				if( guncon_lightgun_right[ THIS_PAD ] < y ) guncon_lightgun_right[ THIS_PAD ] = y;
+				if( guncon_lightgun_top[ THIS_PAD ] > x ) guncon_lightgun_top[ THIS_PAD ] = x;
+				if( guncon_lightgun_bottom[ THIS_PAD ] < y ) guncon_lightgun_bottom[ THIS_PAD ] = y;
 			}
-		}
-	}
-
-
-	if( calibrate_check )
-	{
-		reset_raw_mouse_data( device_hid[ THIS_PAD ] );
-
-
-		reset_data = 0;
-		while(1) {
-			int x,y;
-
-			// check for active device
-			if( is_raw_mouse_button_pressed(device_hid[ THIS_PAD ],0) ||
-					is_raw_mouse_button_pressed(device_hid[ THIS_PAD ],1) ||
-					is_raw_mouse_button_pressed(device_hid[ THIS_PAD ],2) ) {
-				break;
-			}
-
-
-			// read data (16-bit unsigned absolute values)
-			x = get_raw_mouse_x_delta( device_hid[ THIS_PAD ] );
-			y = get_raw_mouse_y_delta( device_hid[ THIS_PAD ] );
-
-
-			// let system rest
-			Sleep(1);
-
-
-			// ignore offscreen data
-			if( x == 0 || y == 0 || x == 65535 || y == 65535 )
-				continue;
-
-
-			if( reset_data == 0 ) {
-				reset_data = 1;
-
-				guncon_lightgun_left[ THIS_PAD ] = 65534;
-				guncon_lightgun_top[ THIS_PAD ] = 65534;
-				guncon_lightgun_right[ THIS_PAD ] = 1;
-				guncon_lightgun_bottom[ THIS_PAD ] = 1;
-			}
-
-
-			// look for screen edges
-			if( guncon_lightgun_left[ THIS_PAD ] > x ) guncon_lightgun_left[ THIS_PAD ] = x;
-			if( guncon_lightgun_right[ THIS_PAD ] < y ) guncon_lightgun_right[ THIS_PAD ] = y;
-			if( guncon_lightgun_top[ THIS_PAD ] > x ) guncon_lightgun_top[ THIS_PAD ] = x;
-			if( guncon_lightgun_bottom[ THIS_PAD ] < y ) guncon_lightgun_bottom[ THIS_PAD ] = y;
 		}
 	}
 
@@ -834,7 +859,10 @@ DWORD WINAPI get_guncon_hid_device()
 	return 0;
 }
 
-
+DWORD WINAPI get_guncon_alt_hid_device()
+{
+	return get_guncon_hid_device(true);
+}
 
 void GetConfig_Guncon( HWND hWnd )
 {
@@ -1296,6 +1324,12 @@ BOOL CALLBACK GunconDlgProc( const HWND hWnd, const UINT msg, const WPARAM wPara
 				return TRUE;
 			}
 
+		case IDC_GUNCON_ACQUIRE_ALT:
+			{
+				CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)get_guncon_alt_hid_device, NULL, 0, 0 );
+
+				return TRUE;
+			}
 
 		case IDC_GUNCON_EDIT_PROFILES:
 			{

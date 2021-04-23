@@ -41,8 +41,6 @@ Calibration flashes screen -BLACK- and measures -RESPONSE- time
 #define DPAD_LEFT 					0x0080
 #define DPAD_RIGHT 					0x0020
 
-#define DEBUG 1
-
 
 /*
 Progressive scan = 2-shot calibration

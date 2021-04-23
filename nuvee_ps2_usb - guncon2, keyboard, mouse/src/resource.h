@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by dialog.rc
 //
 #define ID_MOUSE2_OK                    3
@@ -87,6 +87,7 @@
 #define ID_GUNCON_OK                    1044
 #define IDC_GUNCON1_ACQUIRE             1050
 #define IDC_GUNCON_ACQUIRE              1050
+#define IDC_GUNCON_ACQUIRE_ALT          1051
 #define IDC_MOUSE1_ACQUIRE              1052
 #define IDC_MOUSE_ACQUIRE               1052
 #define IDC_MOUSE2_ACQUIRE              1053

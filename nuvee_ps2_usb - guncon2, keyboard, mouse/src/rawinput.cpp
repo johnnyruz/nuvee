@@ -1,7 +1,6 @@
 #include "raw_mouse.h"
 #include <stdio.h>
 
-#define DEBUG 1
 
 void Init_RawInput()
 {

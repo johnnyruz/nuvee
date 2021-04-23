@@ -5,7 +5,7 @@
 #define u32 unsigned int
 
 
-
+#define DEBUG 0
 
 
 const char* PS2_LibraryName = "nuvee ps2 usb";
