@@ -150,6 +150,7 @@ static int device_z[20*2];
 
 
 static int device_hid[2] = { 0,0 };
+static int device_alt_hid[2] = { 0,0 };
 static int device_absolute[20*2] = { 0,0 };
 
 // ==================================
@@ -258,6 +259,7 @@ int guncon_alignment_auto[2] = { 0,0 };
 
 int guncon_cursor[2] = { GUNCON_SHOW_CURSOR, GUNCON_SHOW_CURSOR };
 char guncon_guid_name[2][512] = { 0,0 };
+char guncon_alt_guid_name[2][512] = { 0,0 };
 
 int guncon_lightgun_left[2] = { 1,1 };
 int guncon_lightgun_top[2] = { 1,1 };

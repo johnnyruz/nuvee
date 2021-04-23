@@ -1,7 +1,7 @@
 #include "raw_mouse.h"
 #include <stdio.h>
 
-
+#define DEBUG 1
 
 void Init_RawInput()
 {
@@ -47,7 +47,7 @@ void Add_RawInput( HWND hwnd )
 
 void Poll_RawInput()
 {
-#if 0
+#if DEBUG
 	static FILE *fp_debug = 0;
 
 

@@ -379,6 +379,7 @@ void LoadConfig_Guncon( char *file_name )
 		fscanf( fp, "Cursor = %d\n", &guncon_cursor[ THIS_PAD ] );
 
 		fscanf( fp, "GUID = %s\n", &guncon_guid_name[ THIS_PAD ] );
+		fscanf( fp, "AlternateGUID = %s\n", &guncon_alt_guid_name[ THIS_PAD ]);
 
 		fscanf( fp, "Lightgun_left = %d\n", &guncon_lightgun_left[ THIS_PAD ] );
 		fscanf( fp, "Lightgun_top = %d\n", &guncon_lightgun_top[ THIS_PAD ] );
@@ -406,6 +407,8 @@ void LoadConfig_Guncon( char *file_name )
 
 	// check for device id
 	device_hid[ THIS_PAD ] = 0;
+	device_alt_hid[ THIS_PAD ] = -1;
+
 
 
 	if( hidmouse_api == HIDMOUSE_API_RAWINPUT )
@@ -413,7 +416,11 @@ void LoadConfig_Guncon( char *file_name )
 		for( int lcv = 1; lcv < raw_mouse_count(); lcv++ ) {
 			if( strcmp( guncon_guid_name[ THIS_PAD ], get_raw_mouse_name(lcv) ) == 0 ) {
 				device_hid[ THIS_PAD ] = lcv;
-				break;
+				//break;
+			}
+			if( strcmp( guncon_alt_guid_name[ THIS_PAD ], get_raw_mouse_name(lcv) ) == 0 ) {
+				device_alt_hid[ THIS_PAD ] = lcv;
+				//break;
 			}
 		}
 	}
@@ -425,6 +432,10 @@ void LoadConfig_Guncon( char *file_name )
 				device_hid[ THIS_PAD ] = lcv;
 				break;
 			}
+			/*if( strcmp( guncon_alt_guid_name[ THIS_PAD ], di_mouse_guid[lcv] ) == 0 ) {
+				device_alt_hid[ THIS_PAD ] = lcv;
+				break;
+			}*/
 		}
 	}
 
@@ -435,6 +446,10 @@ void LoadConfig_Guncon( char *file_name )
 			device_hid[ THIS_PAD ] = lcv + 20;
 			break;
 		}
+		/*if( strcmp( guncon_alt_guid_name[ THIS_PAD ], di_joystick_guid[lcv] ) == 0 ) {
+			device_alt_hid[ THIS_PAD ] = lcv;
+			break;
+		}*/
 	}
 
 
@@ -508,6 +523,12 @@ void SaveConfig_Guncon( char *file_name )
 		}
 		else
 			fprintf( fp, "GUID = SysMouse\n" );
+		
+		if (guncon_alt_guid_name[ THIS_PAD ][0] ) {
+			fprintf( fp, "AlternateGUID = %s\n", guncon_alt_guid_name[ THIS_PAD ] );
+		}
+		else
+			fprintf( fp, "AlternateGUID = \n" );
 
 		fprintf( fp, "Lightgun_left = %d\n", guncon_lightgun_left[ THIS_PAD ] );
 		fprintf( fp, "Lightgun_top = %d\n", guncon_lightgun_top[ THIS_PAD ] );
@@ -559,7 +580,7 @@ DWORD WINAPI get_guncon_hid_device()
 
 
 	device_hid[ THIS_PAD ] = 0;
-
+	device_alt_hid[ THIS_PAD ] = -1;
 		
 
 

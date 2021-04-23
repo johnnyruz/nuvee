@@ -41,6 +41,8 @@ Calibration flashes screen -BLACK- and measures -RESPONSE- time
 #define DPAD_LEFT 					0x0080
 #define DPAD_RIGHT 					0x0020
 
+#define DEBUG 1
+
 
 /*
 Progressive scan = 2-shot calibration
@@ -181,19 +183,26 @@ void Update_Guncon2( int device_port )
 
 
 	for( int lcv = 0; lcv < NUM_MOUSE_BUTTONS; lcv++ ) {
-		guncon_buttons[ THIS_PAD ][ lcv ] = device_buttons[ device_hid[ THIS_PAD ] ][ lcv ];
+		if (device_alt_hid[ THIS_PAD ] >= 0) {
+			guncon_buttons[ THIS_PAD ][ lcv ] = device_buttons[ device_hid[ THIS_PAD ] ][ lcv ] || device_buttons[ device_alt_hid[ THIS_PAD ] ][ lcv ];
+		}
+		else {
+			guncon_buttons[ THIS_PAD ][ lcv ] = device_buttons[ device_hid[ THIS_PAD ] ][ lcv ];
+		}
 	}
 
 	data_absolute = device_absolute[ device_hid[ THIS_PAD ] ];
 
 
-#if 0
+#if DEBUG
 	//if( pad_active == 2 )
 	{
 		if( fp_guncon_debug == 0 ) {
 			fp_guncon_debug = fopen( "guncon2-debug.txt", "w" );
 		}
 
+		fprintf( fp_guncon_debug, "(device_hid) (%d)\n", device_hid[ THIS_PAD ]);
+		fprintf( fp_guncon_debug, "(device_alt_hid) (%d)\n", device_alt_hid[ THIS_PAD ]);
 		fprintf( fp_guncon_debug, "(update) (%d)  ||  (x,y) = %d %d  ||  (delta) = %d %d\n",
 			pad_active,
 			guncon_analog_x[ THIS_PAD ], guncon_analog_y[ THIS_PAD ],
@@ -237,7 +246,7 @@ void Update_Guncon2( int device_port )
 		if( guncon_analog_y[ THIS_PAD ] > gun_bottom ) guncon_analog_y[ THIS_PAD ] = gun_bottom;
 
 
-#if 0
+#if DEBUG
 		//if( pad_active == 2 )
 		{
 			if( fp_guncon_debug == 0 ) {
@@ -438,7 +447,7 @@ void Update_Guncon2( int device_port )
 				y = r.top + h * screen_y / 256;
 
 
-#if 0
+#if DEBUG
 				//if( pad_active == 2 )
 				{
 					if( fp_guncon_debug == 0 ) {
@@ -657,7 +666,7 @@ int Poll_Guncon2( int device_port, u16 *pad_out )
 	// ==================================
 	// ==================================
 
-#if 0
+#if DEBUG
 	//if( pad_active == 2 )
 	{
 		if( fp_guncon_debug == 0 ) {
